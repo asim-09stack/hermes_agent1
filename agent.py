@@ -28,17 +28,22 @@ Respond clearly.
             "prompt": prompt,
             "stream": True
         },
-        stream=True
+        stream=True,
+        timeout=120
     )
 
     output = ""
 
     for line in response.iter_lines():
-        if line:
+        if not line:
+            continue
+        try:
             data = json.loads(line.decode())
             output += data.get("response", "")
+        except json.JSONDecodeError:
+            continue
 
     save_memory(f"User: {user_input}")
     save_memory(f"Agent: {output}")
 
-    return output
+    return output.strip() or "⚠️ No response generated."
